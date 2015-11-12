@@ -15,6 +15,47 @@ var shapes = {
 	rect: 0,
 	circle: 1	
 };
+var doge = {};
+
+
+
+function ImageSprite(spriteSrc) {
+    this.construct(spriteSrc);
+}
+
+ImageSprite.prototype.construct = function (spriteSrc) {
+    this.hasDrawn = false;
+    this.x = 50;
+    this.y = 50;
+    this.width = 50;
+    this.height = 50;
+    this.isLoaded = false;
+    this.image = new Image();
+    this.image.onload = function () {
+        this.isLoaded = true;
+    }.bind(this);
+
+    this.image.src = spriteSrc;
+};
+
+ImageSprite.prototype.initPosition = function (x, y) {
+    this.x = x;
+    this.y = y;
+};
+
+ImageSprite.prototype.update = function (modifier) {
+    if (this.isLoaded) {
+        // context.clearRect(this.x, this.y, this.width, this.height);
+    }
+};
+
+ImageSprite.prototype.render = function () {
+    if (this.isLoaded && !this.hasDrawn) {
+        this.hasDrawn = true;
+        context.drawImage(this.image, this.x, this.y, this.width, this.height);
+    }
+};
+
 
 function Sprite() {
         this.construct();
@@ -44,8 +85,8 @@ Sprite.prototype.update = function (modifier) {
     }
     
 	this.t += modifier*this.dt;
-	this.r += Math.abs(2*Math.sin(Math.abs(this.t)));	
-};
+	this.r += Math.abs(Math.sin(this.t));
+;};
 
 Sprite.prototype.render = function () {
     context.beginPath();
@@ -80,12 +121,14 @@ var update = function(modifier){
 		fc = 0;
 	}
 
+    doge.update(modifier);
 	entities.forEach(function(entity){
 		entity.update(modifier);
 	});
 }
 
 var render = function(){
+    doge.render();
 	entities.forEach(function(entity){
 		entity.render();
 	});
@@ -94,15 +137,23 @@ var render = function(){
 var resizeCanvas = function () {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    drawDoge();
+}
+
+var drawDoge = function(){
+    doge = new ImageSprite('doge.jpeg');
+    doge.width = 100;
+    doge.height = 100;
+    doge.x = (canvas.width - doge.width) / 2;
+    doge.y = (canvas.height - doge.height) / 2;
 }
 
 
 canvas = document.getElementById('canv');
 context = canvas.getContext('2d');
 
-var e1 = new Sprite();
-e1.initPosition(canvas.width/2, canvas.height/2);
-entities.push(e1);
+drawDoge();
+
 
 window.addEventListener('resize', resizeCanvas, false);	
 
