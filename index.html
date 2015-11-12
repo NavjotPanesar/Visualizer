@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+</head>
+<body>
+<canvas id = "canv" style="width: 100%; height: 100%;" />
+</body>
+
+<script>
+var context = {};
+var canvas = {};
+var then = {};	
+var entities = [];
+var shapes = {
+	rect: 0,
+	circle: 1	
+};
+
+function Sprite() {
+        this.construct();
+}
+
+Sprite.prototype.construct = function (spriteSrc) {
+    this.x = 50;
+    this.y = 50;
+    this.r = 50;
+    this.t = 0;
+    this.dt = Math.random()*5;
+    this.shape = Math.round(Math.random());
+    this.color = "#" + Math.random().toString(16).slice(2, 8);
+    this.isLoaded = false;
+};
+
+Sprite.prototype.initPosition = function (x, y) {
+    this.x = x;
+    this.y = y;
+};
+
+Sprite.prototype.update = function (modifier) {
+	if(this.shape == shapes.circle){
+		//context.clearRect(this.x - this.r, this.y  - this.r, this.r*2, this.r*2);
+    } else if(this.shape == shapes.rect){
+    	//context.clearRect(this.x - this.r, this.y - this.r, this.r*2, this.r*2);
+    }
+    
+	this.t += modifier*this.dt;
+	this.r += Math.abs(2*Math.sin(Math.abs(this.t)));	
+};
+
+Sprite.prototype.render = function () {
+    context.beginPath();
+    if(this.shape == shapes.circle){
+		context.arc(this.x,this.y,this.r,0,2*Math.PI);
+    } else if(this.shape == shapes.rect){
+    	context.rect(this.x - this.r, this.y - this.r, this.r*2, this.r*2);
+    }
+	context.strokeStyle = this.color;
+	context.stroke();
+};
+
+
+var main = function () {
+    var now = Date.now();
+    var delta = now - then;
+
+    update(delta / 1000);
+    render();
+
+    then = now;
+    requestAnimationFrame(main);
+};
+
+var fc = 0;
+var update = function(modifier){
+	fc++;
+	if(fc >= 10){
+		var e1 = new Sprite();
+		e1.initPosition(canvas.width/2, canvas.height/2);
+		entities.push(e1);
+		fc = 0;
+	}
+
+	entities.forEach(function(entity){
+		entity.update(modifier);
+	});
+}
+
+var render = function(){
+	entities.forEach(function(entity){
+		entity.render();
+	});
+}
+
+var resizeCanvas = function () {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+
+canvas = document.getElementById('canv');
+context = canvas.getContext('2d');
+
+var e1 = new Sprite();
+e1.initPosition(canvas.width/2, canvas.height/2);
+entities.push(e1);
+
+window.addEventListener('resize', resizeCanvas, false);	
+
+main();
+resizeCanvas();
+
+// web audio api
+
+var audioCtx = new AudioContext();
+
+</script>
