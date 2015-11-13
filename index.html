@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+
+
 <html lang="en">
 <head>
 </head>
@@ -6,162 +8,75 @@
 <canvas id = "canv" style="width: 100%; height: 100%;" />
 </body>
 
+<script src = "PolygonSprite.js"></script>
 <script>
-var context = {};
-var canvas = {};
-var then = {};	
-var entities = [];
-var shapes = {
-	rect: 0,
-	circle: 1	
-};
-var doge = {};
 
 
+(function(){
+    var context = {};
+    var canvas = {};
+    var then = {};  
+    var entities = [];
 
-function ImageSprite(spriteSrc) {
-    this.construct(spriteSrc);
-}
+    var main = function () {
+        var now = Date.now();
+        var delta = now - then;
 
-ImageSprite.prototype.construct = function (spriteSrc) {
-    this.hasDrawn = false;
-    this.x = 50;
-    this.y = 50;
-    this.width = 50;
-    this.height = 50;
-    this.isLoaded = false;
-    this.image = new Image();
-    this.image.onload = function () {
-        this.isLoaded = true;
-    }.bind(this);
+        update(delta / 1000);
+        render();
 
-    this.image.src = spriteSrc;
-};
+        then = now;
+        requestAnimationFrame(main);
+    };
 
-ImageSprite.prototype.initPosition = function (x, y) {
-    this.x = x;
-    this.y = y;
-};
-
-ImageSprite.prototype.update = function (modifier) {
-    if (this.isLoaded) {
-        // context.clearRect(this.x, this.y, this.width, this.height);
+    var update = function(modifier){
+        entities.forEach(function(entity){
+            entity.update(modifier);
+        });
     }
-};
 
-ImageSprite.prototype.render = function () {
-    if (this.isLoaded && !this.hasDrawn) {
-        this.hasDrawn = true;
-        context.drawImage(this.image, this.x, this.y, this.width, this.height);
+    var render = function(){
+        entities.forEach(function(entity){
+            entity.render();
+        });
     }
-};
 
-
-function Sprite() {
-        this.construct();
-}
-
-Sprite.prototype.construct = function (spriteSrc) {
-    this.x = 50;
-    this.y = 50;
-    this.r = 50;
-    this.t = 0;
-    this.dt = Math.random()*5;
-    this.shape = Math.round(Math.random());
-    this.color = "#" + Math.random().toString(16).slice(2, 8);
-    this.isLoaded = false;
-};
-
-Sprite.prototype.initPosition = function (x, y) {
-    this.x = x;
-    this.y = y;
-};
-
-Sprite.prototype.update = function (modifier) {
-	if(this.shape == shapes.circle){
-		//context.clearRect(this.x - this.r, this.y  - this.r, this.r*2, this.r*2);
-    } else if(this.shape == shapes.rect){
-    	//context.clearRect(this.x - this.r, this.y - this.r, this.r*2, this.r*2);
+    var resizeCanvas = function () {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
     }
-    
-	this.t += modifier*this.dt;
-	this.r += Math.abs(Math.sin(this.t));
-;};
 
-Sprite.prototype.render = function () {
-    context.beginPath();
-    if(this.shape == shapes.circle){
-		context.arc(this.x,this.y,this.r,0,2*Math.PI);
-    } else if(this.shape == shapes.rect){
-    	context.rect(this.x - this.r, this.y - this.r, this.r*2, this.r*2);
+    var initPolygon = function (x, y, sideLength, sides) {
+        var e1 = new PolygonSprite(context, x, y, 6, 50);
+        entities.push(e1);
     }
-	context.strokeStyle = this.color;
-	context.stroke();
-};
+
+    var initPolygons = function (x, y, sideLength, sides) { 
+        var spacing = 2;
+        var angledWidth = sideLength*Math.cos((2*Math.PI) / sides);
+        var angledHeight = sideLength*Math.sin((2*Math.PI) / sides);
+        initPolygon(x, y, sideLength, sides);
+        initPolygon(x + (sideLength + angledWidth + spacing), y + (angledHeight + spacing), sideLength, sides);
+        initPolygon(x - (sideLength + angledWidth + spacing), y + (angledHeight + spacing), sideLength, sides);
+
+        initPolygon(x - (sideLength + angledWidth + spacing), y - (angledHeight + spacing), sideLength, sides);
+        initPolygon(x + (sideLength + angledWidth + spacing), y - (angledHeight + spacing), sideLength, sides);
+
+        initPolygon(x + spacing, y + (2*angledHeight + spacing), sideLength, sides);  
+        initPolygon(x + spacing, y - (2*angledHeight + spacing), sideLength, sides);    
+    }
 
 
-var main = function () {
-    var now = Date.now();
-    var delta = now - then;
 
-    update(delta / 1000);
-    render();
+    canvas = document.getElementById('canv');
+    context = canvas.getContext('2d');
 
-    then = now;
-    requestAnimationFrame(main);
-};
+    window.addEventListener('resize', resizeCanvas, false); 
 
-var fc = 0;
-var update = function(modifier){
-	fc++;
-	if(fc >= 10){
-		var e1 = new Sprite();
-		e1.initPosition(canvas.width/2, canvas.height/2);
-		entities.push(e1);
-		fc = 0;
-	}
+    main();
+    resizeCanvas();
+    initPolygons(canvas.width/2, canvas.height/2, 50, 6);
+})();
 
-    doge.update(modifier);
-	entities.forEach(function(entity){
-		entity.update(modifier);
-	});
-}
-
-var render = function(){
-    doge.render();
-	entities.forEach(function(entity){
-		entity.render();
-	});
-}
-
-var resizeCanvas = function () {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    drawDoge();
-}
-
-var drawDoge = function(){
-    doge = new ImageSprite('doge.jpeg');
-    doge.width = 100;
-    doge.height = 100;
-    doge.x = (canvas.width - doge.width) / 2;
-    doge.y = (canvas.height - doge.height) / 2;
-}
-
-
-canvas = document.getElementById('canv');
-context = canvas.getContext('2d');
-
-drawDoge();
-
-
-window.addEventListener('resize', resizeCanvas, false);	
-
-main();
-resizeCanvas();
-
-// web audio api
-
-var audioCtx = new AudioContext();
 
 </script>
