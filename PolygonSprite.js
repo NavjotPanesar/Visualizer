@@ -15,6 +15,8 @@ PolygonSprite.prototype.construct = function (ctx, x, y, sides, size) {
     this.sides = sides;
     this.x = x;
     this.y = y;
+    this.shrapnel = [];
+    // this.generateShrapnel();
 };
 
 PolygonSprite.prototype.update = function (modifier) {
@@ -41,4 +43,13 @@ PolygonSprite.prototype.render = function () {
     this.ctx.strokeStyle = "#CCCCCC";
     this.ctx.lineWidth = 1;
     this.ctx.stroke();
+
+    this.shrapnel.forEach(function(shrap){
+        shrap.render();
+    });
 };
+
+PolygonSprite.prototype.generateShrapnel = function(){
+    var t1 = new PolygonSprite(this.ctx, this.x, this.y, 3, 50);
+    this.shrapnel.push(t1);
+}
